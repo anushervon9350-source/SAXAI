@@ -2,64 +2,82 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAX AI</title>
-    <style>
-        body {
-            background: #0b0d10;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-            padding: 40px;
-        }
-        .logo {
-            font-size: 60px;
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-size: 48px;
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        p {
-            color: #8892a8;
-            font-size: 18px;
-        }
-        .status {
-            display: inline-block;
-            background: rgba(108, 92, 231, 0.2);
-            padding: 8px 24px;
-            border-radius: 40px;
-            color: #a29bfe;
-            font-size: 14px;
-            margin-top: 20px;
-        }
-        .api-link {
-            color: #6c5ce7;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .api-link:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SAX AI — Smart Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <div class="logo">🤖</div>
-        <h1>SAX AI</h1>
-        <p>Умный ассистент на связи</p>
-        <div class="status">🟢 Сервер работает</div>
-        <br><br>
-        <a href="/api/status" class="api-link">📡 Проверить статус</a>
+
+<div class="app">
+
+    <!-- ШАПКА -->
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+            <h1>SAX AI</h1>
+        </div>
+        <div class="header-actions">
+            <i class="fas fa-plus-circle" id="newChatBtn"></i>
+            <i class="fas fa-history" id="historyBtn"></i>
+        </div>
     </div>
+
+    <!-- МОДЕЛИ -->
+    <div class="model-chips" id="modelChips">
+        <span class="chip" data-model="search"><i class="fas fa-search"></i> Search</span>
+        <span class="chip" data-model="image"><i class="fas fa-image"></i> Image</span>
+        <span class="chip active" data-model="deep"><i class="fas fa-microscope"></i> Deep</span>
+        <span class="chip" data-model="gpt52">GPT-5.2</span>
+        <span class="chip" data-model="chatgpt4o">ChatGPT 4o</span>
+        <span class="chip" data-model="gemini">Gemini 3.1</span>
+        <span class="chip" data-model="grok">Grok 4.3</span>
+        <span class="chip preset"><i class="fas fa-sliders-h"></i> Presets</span>
+    </div>
+
+    <!-- ПРЕСЕТЫ -->
+    <div class="presets">
+        <div class="preset-card" data-preset="standard">
+            <div class="title">⚡ Standard</div>
+            <div class="sub">Fast & reliable</div>
+        </div>
+        <div class="preset-card" data-preset="genius">
+            <div class="title">🧠 Genius</div>
+            <div class="sub">Advanced reasoning</div>
+            <span class="badge">Beta</span>
+        </div>
+        <div class="preset-card" data-preset="super">
+            <div class="title">🚀 Super Genius</div>
+            <div class="sub">Max reasoning</div>
+            <span class="badge">Pro</span>
+        </div>
+    </div>
+
+    <!-- ПОЛЕ ВВОДА -->
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Ask SAX AI anything..." autocomplete="off" />
+        <div class="actions">
+            <button id="attachBtn" title="Прикрепить файл"><i class="fas fa-paperclip"></i></button>
+            <button id="micBtn" title="Голосовой ввод"><i class="fas fa-microphone"></i></button>
+            <button class="send-btn" id="sendBtn"><i class="fas fa-arrow-up"></i></button>
+        </div>
+    </div>
+
+    <!-- БЛОК ОТВЕТА -->
+    <div class="response-box" id="responseBox"></div>
+
+    <!-- ФУТЕР -->
+    <div class="footer">
+        <span>SAX AI can make mistakes.</span>
+        <div class="dots">
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+        </div>
+    </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
