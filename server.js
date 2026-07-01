@@ -1,50 +1,30 @@
 // ============================================================
-// SAX AI - СЕРВЕР ДЛЯ VERCEL
+// SAX AI - СЕРВЕР ДЛЯ RENDER (без multer)
 // ============================================================
 
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
 const path = require('path');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 // --- Middleware ---
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// --- Статика ---
 app.use(express.static('public'));
-
-// --- Multer для файлов ---
-const storage = multer.memoryStorage();
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 10485760 },
-    fileFilter: (req, file, cb) => {
-        const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 
-                        'application/pdf', 'text/plain', 'text/markdown'];
-        if (allowed.includes(file.mimetype) || file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Неподдерживаемый тип файла'));
-        }
-    }
-});
 
 // ============================================================
 // API РОУТЫ
 // ============================================================
 
 // --- Чат ---
-app.post('/api/chat', upload.array('files', 5), async (req, res) => {
+app.post('/api/chat', async (req, res) => {
     try {
         const { message, model } = req.body;
-        const files = req.files || [];
 
         console.log(`📩 Сообщение: "${message}"`);
-        console.log(`📎 Файлов: ${files.length}`);
 
         // Проверка на создателя
         if (isAskingAboutCreator(message)) {
@@ -55,17 +35,17 @@ app.post('/api/chat', upload.array('files', 5), async (req, res) => {
             });
         }
 
-        // Отправка в API
+        // Отправка в выбранную модель
         const targetModel = model || 'chatgpt4o';
         let reply = '';
 
         switch (targetModel) {
             case 'chatgpt4o':
             case 'gpt52':
-                reply = await askOpenAI(message, files);
+                reply = await askOpenAI(message);
                 break;
             case 'gemini':
-                reply = await askGemini(message, files);
+                reply = await askGemini(message);
                 break;
             case 'grok':
                 reply = await askGrok(message);
@@ -117,34 +97,15 @@ function isAskingAboutCreator(text) {
 }
 
 // --- OpenAI ---
-async function askOpenAI(prompt, files) {
+async function askOpenAI(prompt) {
     const OpenAI = require('openai');
     const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY
     });
 
-    let messages = [{ role: 'user', content: prompt }];
-
-    const images = files.filter(f => f.mimetype.startsWith('image/'));
-    if (images.length > 0) {
-        const content = [
-            { type: 'text', text: prompt || 'Опиши это изображение' }
-        ];
-
-        for (const img of images) {
-            const base64 = img.buffer.toString('base64');
-            content.push({
-                type: 'image_url',
-                image_url: { url: `data:${img.mimetype};base64,${base64}` }
-            });
-        }
-
-        messages = [{ role: 'user', content: content }];
-    }
-
     const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
-        messages: messages,
+        messages: [{ role: 'user', content: prompt }],
         max_tokens: 500
     });
 
@@ -152,29 +113,13 @@ async function askOpenAI(prompt, files) {
 }
 
 // --- Gemini ---
-async function askGemini(prompt, files) {
+async function askGemini(prompt) {
     const { GoogleGenerativeAI } = require('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-3.1-pro' });
 
-    const parts = [{ text: prompt || 'Опиши прикреплённые файлы' }];
-
-    for (const file of files) {
-        if (file.mimetype.startsWith('image/')) {
-            parts.push({
-                inline_data: {
-                    mime_type: file.mimetype,
-                    data: file.buffer.toString('base64')
-                }
-            });
-        } else {
-            const text = file.buffer.toString('utf-8');
-            parts.push({ text: `\n[Файл: ${file.originalname}]\n${text}` });
-        }
-    }
-
     const result = await model.generateContent({
-        contents: [{ parts: parts }]
+        contents: [{ parts: [{ text: prompt }] }]
     });
 
     return result.response.text() || 'Пустой ответ от Gemini';
@@ -205,7 +150,15 @@ async function askGrok(prompt) {
 }
 
 // ============================================================
-// ЭКСПОРТ ДЛЯ VERCEL
+// ЗАПУСК СЕРВЕРА
 // ============================================================
+
+app.listen(PORT, () => {
+    console.log('========================================');
+    console.log(`🚀 SAX AI Server запущен!`);
+    console.log(`📍 http://localhost:${PORT}`);
+    console.log(`📡 API: http://localhost:${PORT}/api/chat`);
+    console.log(`========================================`);
+});
 
 module.exports = app;
